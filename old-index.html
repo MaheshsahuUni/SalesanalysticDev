@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Sales Analytics</title>
+
+  <!-- Libraries -->
+  <script src="https://cdn.botframework.com/botframework-webchat/latest/webchat.js"></script>
+
+  <style>
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f3f3f3;
+    }
+
+    #banner {
+      background-color: #0078d7;
+      box-shadow: 0 1px rgba(0, 0, 0, 0.2);
+      box-sizing: content-box;
+      color: white;
+      padding: 0px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: bold;
+      height: 50px;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 1000;
+    }
+
+    #banner ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: flex;
+      gap: 20px;
+    }
+
+    #webchat {
+      height: calc(100% - 50px);
+      width: 100%;
+      position: fixed;
+      top: 50px;
+      overflow: hidden;
+      border: 2px solid #d1d5db;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    #upload-status {
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      background: #fff3cd;
+      color: #856404;
+      padding: 6px 10px;
+      border-radius: 5px;
+      font-size: 12px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      display: none;
+      z-index: 9999;
+      max-width: 220px;
+    }
+
+    #fileUploadFloater {
+      position: fixed;
+      bottom: 11px;
+      right: 34px;
+      width: 56px;
+      height: 56px;
+      background: #14568e;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      z-index: 10000;
+      transition: background-color 0.3s ease, transform 0.15s ease;
+    }
+
+    #fileUploadFloater:hover {
+      background: #0f456f;
+      transform: scale(1.1);
+    }
+
+    #fileUploadFloater svg {
+      fill: white;
+      width: 28px;
+      height: 28px;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    /* Additional WebChat styling for borders */
+    #webchat .webchat__bubble__content {
+      border: 1px solid #e5e7eb !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    #webchat .webchat__bubble--from-user .webchat__bubble__content {
+      border: 1px solid #bfdbfe !important;
+    }
+
+    /* Send box border */
+    #webchat .webchat__send-box {
+      border-top: 2px solid #e5e7eb !important;
+    }
+
+    /* Transcript area border */
+    #webchat .webchat__basic-transcript {
+      border: 1px solid #f3f4f6 !important;
+      border-radius: 8px !important;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="banner">
+    <div>
+      <ul>
+        <li>SALES ANALYTICS</li>
+
+      </ul>
+    </div>
+    <div>
+      <button id="restart-chat" title="Restart Chat"
+        style="background:transparent;border:none;cursor:pointer;font-size:20px;margin-right:10px;">🔄</button>
+    </div>
+  </div>
+
+  <div id="webchat"></div>
+  <div id="upload-status"></div>
+
+  <div id="fileUploadFloater" title="Upload File">
+    <svg viewBox="0 0 24 24">
+      <path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z" />
+    </svg>
+  </div>
+  <input type="file" id="file-input"
+    accept=".xls,.xlsx,.csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" />
+
+  <script>
+    async function startBot() {
+      // --- Fetch username and userid from the URL ---
+      const urlParams = new URLSearchParams(window.location.search);
+      const username = urlParams.get("username") || "Guest";
+      const userid = urlParams.get("userid") || (Math.random().toString() + Date.now().toString()).substr(0, 64);
+
+      // --- Fetch Direct Line Token ---
+      const tokenUrl = "https://45f896301c59eee8ad2e7961017ba5.49.environment.api.powerplatform.com/powervirtualagents/botsbyschema/copilots_header_hap_agent33/directline/token?api-version=2022-03-01-preview";
+
+      const response = await fetch(tokenUrl, {
+        headers: { accept: "application/json" }
+      });
+
+      if (!response.ok) {
+        console.error("Failed to fetch Direct Line token:", await response.text());
+        return;
+      }
+
+      const { token } = await response.json();
+
+      const directLine = window.WebChat.createDirectLine({
+        token,
+        domain: 'https://europe.directline.botframework.com/v3/directline'
+      });
+
+      // --- Create a custom store to send event on connect ---
+      const store = WebChat.createStore({}, ({ dispatch }) => next => action => {
+        if (action.type === 'DIRECT_LINE/CONNECT_FULFILLED') {
+          // Send startConversation event with user info
+          dispatch({
+            type: 'WEB_CHAT/SEND_EVENT',
+            payload: {
+              name: 'startConversation',
+              type: 'event',
+              value: {
+                username: username,
+                userid: userid
+              }
+            }
+          });
+        }
+        return next(action);
+      });
+
+      // --- Chat styling options ---
+      const styleOptions = {
+        botAvatarInitials: 'Bot',
+        userAvatarInitials: 'You',
+        suggestedActionLayout: 'carousel',
+        bubbleBackground: '#e6f2ff',
+        bubbleFromUserBackground: '#cce5ff',
+        backgroundColor: '#f3f3f3',
+        hideUploadButton: true,
+        // Add bubble borders
+        bubbleBorderColor: '#d1d5db',
+        bubbleBorderStyle: 'solid',
+        bubbleBorderWidth: 1,
+        bubbleFromUserBorderColor: '#d1d5db',
+        bubbleFromUserBorderStyle: 'solid',
+        bubbleFromUserBorderWidth: 1,
+        bubbleBorderRadius: 8,
+        bubbleFromUserBorderRadius: 8
+      };
+
+      // --- Create a custom style set for more control ---
+      const styleSet = window.WebChat.createStyleSet(styleOptions);
+
+      // Override specific styles for borders
+      styleSet.root = {
+        ...styleSet.root,
+        border: '2px solid #d1d5db',
+        borderRadius: '8px',
+        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+      };
+
+      // --- Render the Web Chat ---
+      window.WebChat.renderWebChat(
+        {
+          directLine,
+          store,
+          userid: userid,
+          username: username,
+          styleSet
+        },
+        document.getElementById('webchat')
+      );
+
+      // --- Restart Chat Button ---
+      document.getElementById('restart-chat').addEventListener('click', () => {
+        directLine.postActivity({
+          type: 'message',
+          from: { id: userid, name: username },
+          text: 'Main Menu'
+        }).subscribe();
+      });
+
+      // --- File Upload Logic ---
+      const fileInput = document.getElementById('file-input');
+      const uploadFloater = document.getElementById('fileUploadFloater');
+      const uploadStatus = document.getElementById('upload-status');
+
+      uploadFloater.addEventListener('click', () => fileInput.click());
+
+      fileInput.addEventListener('change', async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        // --- Check for Excel file type ---
+        const fileName = file.name.toLowerCase();
+        if (!fileName.endsWith('.xlsx') && !fileName.endsWith('.xls') && !fileName.endsWith('.csv')) {
+          alert('Please upload only Excel files (.xls, .xlsx) or CSV files (.csv).');
+          fileInput.value = ''; // Reset file input
+          return;
+        }
+
+        // --- Create new filename with changed_ prefix ---
+        const newFileName = `changed_${file.name}`;
+
+        // --- Azure Blob Storage Configuration ---
+        const containerUrlWithSas = "https://bnlwestgunileveraf00600.blob.core.windows.net/excel-files?se=2026-02-18T07%3A08%3A48Z&sp=rwl&sv=2026-02-06&sr=c&sig=f4YbNgIno49PxRiP9YsnTSeGm%2BBu0X6xb8Hk6AqhSEE%3D";
+
+
+        const [containerUrl, sasToken] = containerUrlWithSas.split('?');
+        const uploadUrl = `${containerUrl}/${newFileName}?${sasToken}`;
+
+        try {
+          uploadStatus.textContent = `Uploading ${newFileName}...`;
+          uploadStatus.style.display = 'block';
+
+          const uploadResponse = await fetch(uploadUrl, {
+            method: 'PUT',
+            headers: {
+              'x-ms-blob-type': 'BlockBlob',
+              'Content-Type': file.type
+            },
+            body: file
+          });
+
+          if (!uploadResponse.ok) {
+            throw new Error(`Server responded with ${uploadResponse.status}: ${uploadResponse.statusText}`);
+          }
+
+          uploadStatus.textContent = 'Upload complete!';
+          console.log(`File uploaded successfully: ${newFileName}`);
+
+          // Send a message to the bot indicating a file was uploaded
+          directLine.postActivity({
+            type: 'message',
+            from: { id: userid, name: username },
+            text: `I have uploaded the file: ${newFileName}`
+          }).subscribe();
+
+        } catch (error) {
+          console.error("Error uploading file:", error);
+          alert(`Upload failed. Please check the console for details. Error: ${error.message}`);
+          uploadStatus.textContent = 'Upload failed.';
+          uploadStatus.style.background = '#f8d7da';
+          uploadStatus.style.color = '#721c24';
+        } finally {
+          // Reset file input so the same file can be re-uploaded
+          fileInput.value = '';
+          // Hide status message after a few seconds
+          setTimeout(() => {
+            uploadStatus.style.display = 'none';
+            uploadStatus.style.background = '#fff3cd'; // Reset color
+            uploadStatus.style.color = '#856404';
+          }, 5000);
+        }
+      });
+    }
+
+    // Start bot immediately
+    startBot();
+  </script>
+</body>
+
+</html>
