@@ -269,7 +269,7 @@
 
         // --- Azure Blob Storage Configuration ---
         try {
-          const sasResponse = await fetch("/api/generate-sas?container=excel-files");
+          const sasResponse = await fetch("https://6212-sastokengeneration-b7d8b9ewc5dscsfs.northeurope-01.azurewebsites.net/api/generate-sas?code=OwIWZ0lVkK_5O3luTaSUzz4jHYl8Z-Q6RRbxqgTJ_HgZAzFu1W0_Iw%3D%3D&container=excel-files");
           if (!sasResponse.ok) {
             throw new Error(`Failed to get SAS token: ${sasResponse.statusText}`);
           }

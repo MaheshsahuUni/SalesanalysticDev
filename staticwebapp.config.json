@@ -1,12 +1,4 @@
 {
-  "routes": [
-    {
-      "route": "/api/generate-sas",
-      "methods": ["GET"],
-      "allowUnauthenticated": true,
-      "backend": "function"
-    }
-  ],
   "navigationFallback": {
     "rewrite": "/index.html",
     "exclude": ["/images/*", "/css/*"]
