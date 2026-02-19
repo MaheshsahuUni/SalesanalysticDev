@@ -1,0 +1,11 @@
+*.js.map
+*.ts
+.env
+.env.local
+.vscode/
+.idea/
+node_modules/
+test/
+tests/
+.git/
+*.git
