@@ -1,4 +1,11 @@
 {
+  "routes": [
+    {
+      "route": "/api/*",
+      "methods": ["GET", "POST"],
+      "allowUnauthenticated": true
+    }
+  ],
   "navigationFallback": {
     "rewrite": "/index.html",
     "exclude": ["/images/*", "/css/*"]
