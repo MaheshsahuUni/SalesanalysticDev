@@ -269,16 +269,14 @@
 
         // --- Azure Blob Storage Configuration ---
         try {
-          const sasResponse = await fetch("/api/generate-sas?container=excel-files");
-          if (!sasResponse.ok) {
-            throw new Error(`Failed to get SAS token: ${sasResponse.statusText}`);
-          }
-          const { sasUrl } = await sasResponse.json();
-          const containerUrlWithSas = sasUrl;
-
-
-          const [containerUrl, sasToken] = containerUrlWithSas.split('?');
-          const uploadUrl = `${containerUrl}/${newFileName}?${sasToken}`;
+          // SAS token from Azure environment variable
+          const sasToken = "%%SAS_TOKEN%%"; // Will be replaced at build time
+          const storageAccountName = "bnlwestgunileveraf00600";
+          const container = "excel-files";
+          
+          // Build the SAS URL directly
+          const sasUrl = `https://${storageAccountName}.blob.core.windows.net/${container}?${sasToken}`;
+          const uploadUrl = `${sasUrl}/${newFileName}`;
 
           uploadStatus.textContent = `Uploading ${newFileName}...`;
           uploadStatus.style.display = 'block';
