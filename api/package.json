@@ -1,0 +1,15 @@
+{
+  "name": "azure-func-generate-sas",
+  "version": "1.0.0",
+  "description": "Azure Functions for generating SAS tokens",
+  "scripts": {
+    "start": "func start",
+    "build": "echo 'Building functions...'"
+  },
+  "dependencies": {
+    "azure-functions-core-tools": "^4.0.0"
+  },
+  "devDependencies": {
+    "azure-functions-core-tools": "^4.0.0"
+  }
+}

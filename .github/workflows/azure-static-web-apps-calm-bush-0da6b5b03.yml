@@ -43,6 +43,7 @@ jobs:
           app_location: "/" # App source code path
           api_location: "api" # Api source code path - Azure Functions backend
           output_location: "." # Built app content directory - optional
+          skip_app_build: true # Skip app build as it's static HTML
           github_id_token: ${{ steps.idtoken.outputs.result }}
           ###### End of Repository/Build Configurations ######
         env:

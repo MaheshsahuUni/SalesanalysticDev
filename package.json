@@ -1,0 +1,16 @@
+{
+  "name": "sales-analytics",
+  "version": "1.0.0",
+  "description": "Sales Analytics application with Azure Functions API",
+  "main": "index.html",
+  "scripts": {
+    "build:azure": "echo 'Building...'",
+    "build": "echo 'Building...'"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "azure-functions-core-tools": "^4.0.0"
+  }
+}
