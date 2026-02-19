@@ -15,7 +15,7 @@ module.exports = async function (context, req) {
   }
 
   // Your storage account name
-  const storageAccountName = "your-storage-account-name"; // Change this to your storage account
+  const storageAccountName = "bnlwestgunileveraf00600";
   
   // Build the SAS URL
   const sasUrl = `https://${storageAccountName}.blob.core.windows.net/${container}?${sasToken}`;
