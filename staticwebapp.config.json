@@ -1,12 +1,4 @@
 {
-  "routes": [
-    {
-      "route": "/api/generate-sas",
-      "methods": ["GET"],
-      "allowUnauthenticated": true,
-      "rewrite": "https://6212-sastokengeneration-b7d8b9ewc5dscsfs.northeurope-01.azurewebsites.net/api/generate-sas?code=OwIWZ0lVkK_5O3luTaSUzz4jHYl8Z-Q6RRbxqgTJ_HgZAzFu1W0_Iw%3D%3D"
-    }
-  ],
   "navigationFallback": {
     "rewrite": "/index.html",
     "exclude": ["/images/*", "/css/*"]
