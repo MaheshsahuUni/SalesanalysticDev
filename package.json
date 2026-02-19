@@ -2,6 +2,9 @@
   "name": "sales-analytics",
   "version": "1.0.0",
   "private": true,
-  "scripts": {}
+  "scripts": {
+    "build": "echo 'Static app - no build needed'",
+    "build:azure": "echo 'Static app - no build needed'"
+  }
 }
 
